@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
-from django.conf.global_settings import AUTH_USER_MODEL
+from django.utils.safestring import mark_safe
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,24 +30,27 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
+load_dotenv()
 # Application definition
 
 AUTH_USER_MODEL='core.User'
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
+    'oauth2_provider',
     'rest_framework',
     'core',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -56,12 +60,20 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    )
+}
+
+CORS_ALLOW_ALL_ORIGINS=True
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,6 +138,9 @@ USE_I18N = True
 
 USE_TZ = True
 
+CLIENT_ID='76dV7XP4v9t9IbMP3y6SDf6JQbrafKJ15ImAjUaR'
+CLIENT_SECRET='9FyzyEwTwIPGxRdvBqAshkLRiUculQfhmq71EPzlxKChyRGs14lnWIbt5rvR9MwJJs0k7hteXPzYCkB8uYFRV1B9Mu1yAeUKphzPeastWiBA73blFsxEFtMRIV9l54aM'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -136,3 +151,34 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Nhà Hàng Admin",
+    "site_header": "Quản Lý Nhà Hàng",
+    "site_brand": "Restaurant System",
+    "welcome_sign": "Chào mừng quay trở lại trang quản trị!",
+    "search_model": ["core.Order", "core.Bill"],
+
+    "topmenu_links": [
+        {"name": "Trang chủ", "url": "admin:index", "permissions": ["auth.view_user"]},
+        {"name": mark_safe('<i class="fas fa-chart-pie mr-1"></i> Xem Thống Kê'), "url": "admin:restaurant_stats","icon": "fas fa-chart-pie"},
+    ],
+
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "core.User": "fas fa-users",
+        "core.Category": "fas fa-list",
+        "core.Food": "fas fa-utensils",
+        "core.FoodIngredient": "fas fa-cubes",
+        "core.FoodReview": "fas fa-star",
+        "core.Ingredient": "fas fa-carrot",
+        "core.Supplier": "fas fa-truck",
+        "core.ImportReceipt": "fas fa-file-import",
+        "core.Order": "fas fa-shopping-cart",
+        "core.Bill": "fas fa-file-invoice-dollar",
+        "core.Payment": "fas fa-credit-card",
+        "core.RestaurantTable": "fas fa-chair",
+        "core.Reservation": "fas fa-calendar-alt",
+        "core.Voucher": "fas fa-ticket-alt",
+    },
+}

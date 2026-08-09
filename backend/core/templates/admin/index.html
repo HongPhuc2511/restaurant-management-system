@@ -1,0 +1,13 @@
+{% extends "admin/index.html" %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'admin:restaurant_stats' %}"
+       style="display:inline-block; background:#28a745; color:#fff; padding:10px 20px;
+              border-radius:6px; text-decoration:none; font-weight:bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+         Xem Thống Kê Nhà Hàng
+    </a>
+</div>
+
+{{ block.super }}
+{% endblock %}

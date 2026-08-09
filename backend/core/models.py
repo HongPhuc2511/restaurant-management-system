@@ -15,7 +15,7 @@ class BaseModel(models.Model):
 
 class User(AbstractUser):
     role=models.CharField(max_length=20,choices=enums.Role.choices,default=enums.Role.USER)
-    phone=models.CharField(max_length=15)
+    phone=models.CharField(max_length=15,blank=True,default='')
     created_at=models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -27,7 +27,7 @@ class User(AbstractUser):
 class Category(BaseModel):
     name=models.CharField(max_length=100)
     description=models.TextField(blank=True)
-
+    image=CloudinaryField(null=True)
     class Meta:
         db_table='categories'
 
@@ -73,6 +73,8 @@ class Reservation(BaseModel):
     status=models.CharField(max_length=20,choices=enums.ReservationStatus.choices,default=enums.ReservationStatus.PENDING)
     note=models.TextField(blank=True)
     customer=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='reservations')
+    guest_name = models.CharField(max_length=100, blank=True)
+    guest_phone = models.CharField(max_length=15, blank=True)
     table=models.ForeignKey(RestaurantTable,on_delete=models.SET_NULL,null=True,related_name='reservations')
 
     class Meta:
@@ -138,6 +140,7 @@ class Order(BaseModel):
     order_time=models.DateTimeField(auto_now_add=True)
     status=models.CharField(max_length=20,choices=enums.OrderStatus.choices,default=enums.OrderStatus.PENDING)
     note=models.TextField(blank=True)
+    address = models.CharField(max_length=255, blank=True)
     customer=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='orders_customer')
     table=models.ForeignKey(RestaurantTable,on_delete=models.SET_NULL,null=True,related_name='orders')
     employee=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='orders_employee')
@@ -161,6 +164,8 @@ class Voucher(BaseModel):
     discount=models.DecimalField(max_digits=6,decimal_places=0,default=0)
     start_date=models.DateTimeField()
     end_date=models.DateTimeField()
+    image = CloudinaryField(null=True, blank=True)
+    description = models.TextField(blank=True)
 
     class Meta:
         db_table='vouchers'
@@ -190,4 +195,5 @@ class Payment(BaseModel):
 
     class Meta:
         db_table='payments'
-# Create your models here.
+        unique_together = ('bill', 'payment_method')
+    # Create your models here.
