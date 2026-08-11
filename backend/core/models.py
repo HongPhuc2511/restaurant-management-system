@@ -36,7 +36,7 @@ class Category(BaseModel):
 
 class Food(BaseModel):
     name=models.CharField(max_length=100)
-    price=models.DecimalField(decimal_places=0,max_digits=12)
+    price=models.DecimalField(decimal_places=2,max_digits=12)
     description=models.TextField(blank=True)
     image=CloudinaryField(null=True)
     category=models.ForeignKey(Category,on_delete=models.SET_NULL,null=True,related_name='food')
@@ -83,8 +83,8 @@ class Reservation(BaseModel):
 class Ingredient(BaseModel):
     name = models.CharField(max_length=150)
     unit = models.CharField(max_length=20)
-    quantity = models.DecimalField(max_digits=10, decimal_places=0, default=0)
-    price = models.DecimalField(max_digits=12, decimal_places=0, default=0)
+    quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
         db_table = "ingredients"
@@ -95,7 +95,7 @@ class Ingredient(BaseModel):
 class FoodIngredient(BaseModel):
     food=models.ForeignKey(Food,on_delete=models.CASCADE,related_name='ingredients')
     ingredient=models.ForeignKey(Ingredient,on_delete=models.PROTECT,related_name='food_ingredients')
-    quantity = models.DecimalField(max_digits=10, decimal_places=0, default=0)
+    quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     class Meta:
         db_table = "food_ingredients"
@@ -115,7 +115,7 @@ class Supplier(BaseModel):
 class ImportReceipt(BaseModel):
     supplier=models.ForeignKey(Supplier,on_delete=models.PROTECT,related_name='import_receipts')
     employee=models.ForeignKey(User,on_delete=models.PROTECT,related_name='import_receipts')
-    total_amount=models.DecimalField(max_digits=10, decimal_places=0,default=0)
+    total_amount=models.DecimalField(max_digits=12, decimal_places=2,default=0)
     note=models.TextField(blank=True)
 
     class Meta:
@@ -127,14 +127,22 @@ class ImportReceipt(BaseModel):
 class ImportReceiptDetail(BaseModel):
     receipt=models.ForeignKey(ImportReceipt,on_delete=models.CASCADE,related_name='details')
     ingredient=models.ForeignKey(Ingredient, on_delete=models.PROTECT,related_name='import_details')
-    quantity=models.DecimalField(max_digits=10, decimal_places=0,default=0)
-    unit_price=models.DecimalField(max_digits=10, decimal_places=0,default=0)
-    sub_total=models.DecimalField(max_digits=10, decimal_places=0,default=0)
+    quantity=models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    unit_price=models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    sub_total=models.DecimalField(max_digits=10, decimal_places=2,default=0)
 
     class Meta:
         db_table='import_receipt_details'
         unique_together = ('receipt', 'ingredient')
 
+    def save(self, *args, **kwargs):
+        new = self.pk is None
+        self.sub_total = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+
+        if new:
+            self.ingredient.quantity += self.quantity
+            self.ingredient.save()
 
 class Order(BaseModel):
     order_time=models.DateTimeField(auto_now_add=True)
@@ -152,16 +160,16 @@ class Order(BaseModel):
 class OrderItem(BaseModel):
     order=models.ForeignKey(Order,on_delete=models.CASCADE,related_name='items')
     food=models.ForeignKey(Food,on_delete=models.PROTECT,related_name='order_items')
-    quantity=models.DecimalField(max_digits=10, decimal_places=1,default=0)
-    unit_price=models.DecimalField(max_digits=10, decimal_places=0,default=0)
-    subtotal=models.DecimalField(max_digits=10, decimal_places=0,default=0)
+    quantity=models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    unit_price=models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    subtotal=models.DecimalField(max_digits=10, decimal_places=2,default=0)
 
     class Meta:
         db_table='order_items'
 
 class Voucher(BaseModel):
     code=models.CharField(max_length=20,unique=True)
-    discount=models.DecimalField(max_digits=6,decimal_places=0,default=0)
+    discount=models.DecimalField(max_digits=12,decimal_places=0,default=0)
     start_date=models.DateTimeField()
     end_date=models.DateTimeField()
     image = CloudinaryField(null=True, blank=True)
@@ -175,9 +183,9 @@ class Voucher(BaseModel):
 
 class Bill(BaseModel):
     order=models.OneToOneField(Order,on_delete=models.CASCADE,related_name='bill')
-    total_amount=models.DecimalField(max_digits=10, decimal_places=0,default=0)
-    discount=models.DecimalField(max_digits=6,decimal_places=0,default=0)
-    final_amount=models.DecimalField(max_digits=10,decimal_places=0,default=0)
+    total_amount=models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    discount=models.DecimalField(max_digits=10,decimal_places=2,default=0)
+    final_amount=models.DecimalField(max_digits=10,decimal_places=2,default=0)
     voucher=models.ForeignKey(Voucher,on_delete=models.SET_NULL,null=True,related_name='bills')
 
     class Meta:
@@ -188,7 +196,7 @@ class Bill(BaseModel):
 
 class Payment(BaseModel):
     bill=models.ForeignKey(Bill,on_delete=models.PROTECT,related_name='payments')
-    amount=models.DecimalField(max_digits=10,decimal_places=0,default=0)
+    amount=models.DecimalField(max_digits=10,decimal_places=2,default=0)
     payment_method=models.CharField(max_length=20,choices=enums.PaymentMethod.choices,default=enums.PaymentMethod.CASH)
     payment_status=models.CharField(max_length=20,choices=enums.PaymentStatus.choices,default=enums.PaymentStatus.PENDING)
     paid_at = models.DateTimeField(null=True, blank=True)

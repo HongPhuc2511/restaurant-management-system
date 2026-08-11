@@ -1,5 +1,4 @@
 import os
-import traceback
 import uuid
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -17,31 +16,9 @@ from core.vnpay import VNPAY
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 
-
 class CategoryViewSet(viewsets.ViewSet, generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
-
-class FoodViewSet(viewsets.ViewSet, generics.ListAPIView):
-    queryset = Food.objects.filter(active=True)
-    serializer_class = serializers.FoodSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
-    pagination_class=paginators.ItemPaginator
-    search_fields = ['name']
-    ordering_fields = ['id', 'price']
-
-    def get_queryset(self):
-        query =self.queryset
-
-        q=self.request.query_params.get('q')
-        if q:
-            query=query.filter(food__icontains=q)
-
-        cate_id=self.request.query_params.get('category_id')
-        if cate_id:
-            query=query.filter(category__id=cate_id)
-
-        return query
 
 class UserViewSet(viewsets.ViewSet, generics.CreateAPIView):
     queryset = User.objects.filter(is_active=True)

@@ -7,7 +7,6 @@ const menuItems = [
   { name: "Trang chủ", path: "/" },
   { name: "Thực đơn", path: "/menu" },
   { name: "Khuyến mãi", path: "/promotions" },
-  { name: "Đặt mang về", path: "/takeaway" },
   { name: "Đặt bàn", path: "/reservation" },
 ];
 

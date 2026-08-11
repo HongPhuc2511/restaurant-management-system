@@ -1,3 +1,5 @@
+import json
+
 from django import forms
 from django.contrib import admin
 from django.db.models import Sum, Count
@@ -9,10 +11,34 @@ from django.utils.safestring import mark_safe
 
 from core.models import *
 
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('id', 'username', 'email', 'role', 'phone', 'is_active')
+    list_filter = ('role', 'is_active')
+    search_fields = ('username', 'email', 'phone')
+    list_editable = ('role',)
+
 class FoodForm(forms.ModelForm):
     class Meta:
         model = Food
         fields='__all__'
+
+class FoodIngredientInline(admin.TabularInline):
+    model = FoodIngredient
+    extra = 1
+
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'unit', 'stock_status', 'price', 'active')
+    search_fields = ('name',)
+    list_filter = ('active', 'unit')
+
+    def stock_status(self, obj):
+        color = "red" if obj.quantity <= 10 else "green"
+        return format_html(
+            '<span style="color:{}; font-weight:bold;">{} {}</span>',
+            color, obj.quantity, obj.unit
+        )
+
+    stock_status.short_description = "Tồn kho"
 
 class FoodAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'price','category','active')
@@ -20,6 +46,7 @@ class FoodAdmin(admin.ModelAdmin):
     list_filter = ('category','active')
     readonly_fields = ('avatar',)
     form = FoodForm
+    inlines = [FoodIngredientInline]
 
     def avatar(self, food):
             return mark_safe(f'<img src="{food.image.url}" width="150" />')
@@ -36,10 +63,7 @@ class OrderItemInline(admin.TabularInline):
     fields = ('food', 'quantity', 'unit_price', 'subtotal')
     readonly_fields = ('subtotal',)
 
-
-@admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-
     list_display = ('id', 'customer', 'table', 'status', 'get_total_amount', 'order_time')
     list_filter = ('status', 'order_time')
     search_fields = ('id', 'customer__username', 'address')
@@ -50,7 +74,6 @@ class OrderAdmin(admin.ModelAdmin):
     def get_total_amount(self, obj):
         total = sum(item.subtotal for item in obj.items.all() if item.subtotal)
         return f"{total:,.0f} VNĐ"
-
     get_total_amount.short_description = "Tổng tiền"
 
 class ImportReceiptDetailInline(admin.TabularInline):
@@ -60,9 +83,28 @@ class ImportReceiptDetailInline(admin.TabularInline):
 
 
 class ImportReceiptAdmin(admin.ModelAdmin):
-    list_display = ['id', 'supplier', 'employee', 'total_amount', 'created_date']
-    list_filter = ['supplier']
+    list_display = ('id', 'supplier', 'employee', 'total_amount', 'active', 'created_date')
+    list_filter = ('active', 'supplier')
+    search_fields = ('supplier__name',)
     inlines = [ImportReceiptDetailInline]
+    readonly_fields = ('total_amount',)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "employee":
+            kwargs["queryset"] = User.objects.filter(role__in=[enums.Role.ADMIN, enums.Role.STAFF])
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save()
+        receipt = form.instance
+        total = sum(d.sub_total for d in receipt.details.all())
+        receipt.total_amount = total
+        receipt.save()
+
+    def save_model(self, request, obj, form, change):
+        if not obj.employee_id:
+            obj.employee = request.user
+        super().save_model(request, obj, form, change)
 
 class ReservationInline(admin.TabularInline):
     model = Reservation
@@ -71,8 +113,6 @@ class ReservationInline(admin.TabularInline):
     fields = ('customer', 'guest_name', 'guest_phone', 'reservation_time', 'number_of_people', 'status')
     readonly_fields = ('reservation_time',)
 
-
-@admin.register(RestaurantTable)
 class RestaurantTableAdmin(admin.ModelAdmin):
     list_display = ('number', 'capacity', 'status')
     list_filter = ('status',)
@@ -80,18 +120,9 @@ class RestaurantTableAdmin(admin.ModelAdmin):
     list_editable = ('status',)
     inlines = [ReservationInline]
 
-
-@admin.register(Reservation)
 class ReservationAdmin(admin.ModelAdmin):
-    list_display = (
-        'id',
-        'get_customer_info',
-        'guest_phone',
-        'table',
-        'reservation_time',
-        'number_of_people',
-        'status'
-    )
+    list_display = ('id','get_customer_info','guest_phone','table',
+        'reservation_time', 'number_of_people','status')
     list_filter = ('status', 'reservation_time')
     search_fields = ('guest_name', 'guest_phone', 'customer__username', 'customer__email')
     readonly_fields = ('reservation_time',)
@@ -108,7 +139,6 @@ class PaymentInline(admin.TabularInline):
     readonly_fields = ('paid_at',)
     can_delete = False
 
-@admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('id', 'bill_link', 'amount_formatted', 'payment_method_badge', 'payment_status_badge', 'paid_at')
     list_filter = ('payment_method', 'payment_status', 'paid_at')
@@ -127,7 +157,6 @@ class PaymentAdmin(admin.ModelAdmin):
         return format_html(f'<span style="background-color: {color}; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">{obj.payment_method}</span>')
     payment_method_badge.short_description = "P.Thức Thanh Toán"
 
-    # Badge màu cho Trạng thái thanh toán
     def payment_status_badge(self, obj):
         colors = {
             'SUCCESS': '#28a745',
@@ -139,7 +168,6 @@ class PaymentAdmin(admin.ModelAdmin):
         return format_html(f'<span style="background-color: {color}; color: {text_color}; padding: 4px 8px; border-radius: 4px; font-weight: bold;">{obj.get_payment_status_display()}</span>')
     payment_status_badge.short_description = "Trạng Thái"
 
-@admin.register(Bill)
 class BillAdmin(admin.ModelAdmin):
     list_display = ('id', 'order_link', 'total_amount_formatted', 'final_amount_formatted', 'discount', 'created_date')
     list_filter = ('created_date',)
@@ -158,6 +186,10 @@ class BillAdmin(admin.ModelAdmin):
         return f"{obj.final_amount:,.0f} VNĐ"
     final_amount_formatted.short_description = "Thực Thu"
 
+class SupplierAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'phone', 'address', 'active')
+    search_fields = ('name', 'phone')
+    list_filter = ('active',)
 
 class VoucherAdmin(admin.ModelAdmin):
     list_display = ['id', 'code', 'discount', 'start_date', 'end_date', 'active']
@@ -174,31 +206,34 @@ class RestaurantAdminSite(admin.AdminSite):
         return custom_urls + urls
 
     def restaurant_stats(self, request):
-        revenue_by_month = (
+        revenue_qs = (
             Payment.objects.filter(payment_status=enums.PaymentStatus.SUCCESS)
             .annotate(month=TruncMonth('paid_at'))
             .values('month')
             .annotate(total=Sum('amount'))
             .order_by('month')
         )
+        revenue_labels = [r['month'].strftime('%m/%Y') for r in revenue_qs]
+        revenue_data = [float(r['total']) for r in revenue_qs]
 
-        top_foods = (
+        top_foods_qs = (
             Food.objects.annotate(sold=Sum('order_items__quantity'))
             .filter(sold__isnull=False)
             .order_by('-sold')[:5]
-            .values('id', 'name', 'sold')
         )
+        top_food_labels = [f.name for f in top_foods_qs]
+        top_food_data = [float(f.sold) for f in top_foods_qs]
 
         orders_by_status = (
-            Order.objects.values('status')
-            .annotate(count=Count('id'))
-            .order_by('-count')
+            Order.objects.values('status').annotate(count=Count('id')).order_by('-count')
         )
+        status_labels = [o['status'] for o in orders_by_status]
+        status_data = [o['count'] for o in orders_by_status]
 
-        reservations_by_status = (
-            Reservation.objects.values('status')
-            .annotate(count=Count('id'))
-            .order_by('-count')
+        low_stock_ingredients = (
+            Ingredient.objects.filter(active=True, quantity__lte=10)
+            .order_by('quantity')
+            .values('id', 'name', 'unit', 'quantity')
         )
 
         total_revenue = Payment.objects.filter(
@@ -209,13 +244,16 @@ class RestaurantAdminSite(admin.AdminSite):
         total_customers = User.objects.filter(role=enums.Role.USER).count()
 
         return TemplateResponse(request, 'admin/restaurant_stats.html', {
-            'revenue_by_month': revenue_by_month,
-            'top_foods': top_foods,
-            'orders_by_status': orders_by_status,
-            'reservations_by_status': reservations_by_status,
             'total_revenue': total_revenue,
             'total_orders': total_orders,
             'total_customers': total_customers,
+            'low_stock_ingredients': low_stock_ingredients,
+            'revenue_labels_json': json.dumps(revenue_labels),
+            'revenue_data_json': json.dumps(revenue_data),
+            'top_food_labels_json': json.dumps(top_food_labels),
+            'top_food_data_json': json.dumps(top_food_data),
+            'status_labels_json': json.dumps(status_labels),
+            'status_data_json': json.dumps(status_data),
         })
 
 class FoodReviewAdmin(admin.ModelAdmin):
@@ -240,14 +278,13 @@ class FoodReviewAdmin(admin.ModelAdmin):
     short_comment.short_description = "Nội Dung Bình Luận"
 
 admin_site=RestaurantAdminSite()
-admin_site.register(User)
+admin_site.register(User,UserAdmin)
 admin_site.register(Category,CategoryAdmin)
 admin_site.register(Food,FoodAdmin)
 admin_site.register(RestaurantTable,RestaurantTableAdmin)
 admin_site.register(Reservation,ReservationAdmin)
-admin_site.register(Ingredient)
-admin_site.register(FoodIngredient)
-admin_site.register(Supplier)
+admin_site.register(Ingredient,IngredientAdmin)
+admin_site.register(Supplier,SupplierAdmin)
 admin_site.register(ImportReceipt,ImportReceiptAdmin)
 admin_site.register(Voucher,VoucherAdmin)
 admin_site.register(Order, OrderAdmin)

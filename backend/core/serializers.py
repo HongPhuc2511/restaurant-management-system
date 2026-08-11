@@ -8,27 +8,15 @@ class ItemSerializer(serializers.ModelSerializer):
             data['image'] = instance.image.url
         return data
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(ItemSerializer):
     class Meta:
-        model= Category
-        fields = ['id', 'name','description','image','active']
+        model = Category
+        fields = ['id', 'name', 'description', 'image', 'active']
 
-    def to_representation(self, instance):
-        data=super().to_representation(instance)
-        if instance.image:
-           data['image'] = instance.image.url
-        return data
-
-class FoodSerializer(serializers.ModelSerializer):
+class FoodSerializer(ItemSerializer):
     class Meta:
-        model= Food
-        fields = ['id', 'name','price','description','image','category','active']
-
-    def to_representation(self, instance):
-        data=super().to_representation(instance)
-        if instance.image:
-           data['image'] = instance.image.url
-        return data
+        model = Food
+        fields = ['id', 'name', 'price', 'description', 'image', 'category', 'active']
 
 class FoodDetailSerializer(FoodSerializer):
     category = CategorySerializer(read_only=True)
@@ -52,17 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(user.password)
         user.save()
         return user
-
-class FoodReviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=FoodReview
-        fields=['id','rating','comment','customer','food','created_date']
-        extra_kwargs={'customer':{'write_only':True}}
-
-        def to_representation(self, instance):
-            data=super().to_representation(instance)
-            data['customer'] = SimpleUserSerializer(instance.customer).data
-            return data
 
 class RestaurantTableSerializer(serializers.ModelSerializer):
     class Meta:
@@ -119,7 +96,16 @@ class OrderSerializer(serializers.ModelSerializer):
                 order_items.append(oi)
             OrderItem.objects.bulk_create(order_items)
 
+            for oi in order_items:
+                recipe_items = oi.food.ingredients.all()
+                for recipe in recipe_items:
+                    ingredient = recipe.ingredient
+                    needed = recipe.quantity * oi.quantity
+                    ingredient.quantity = ingredient.quantity - needed
+                    ingredient.save()
+
             total = sum(oi.subtotal for oi in order_items)
+
             Bill.objects.create(order=order,total_amount=total,
                                 discount=0,final_amount=total,)
             return order
@@ -151,7 +137,7 @@ class VoucherSerializer(serializers.ModelSerializer):
         return data
 
 
-class FoodReviewSerializer(serializers.ModelSerializer):
+class Serializer(serializers.ModelSerializer):
     class Meta:
         model = FoodReview
         fields = ['id', 'rating', 'comment', 'customer', 'food', 'created_date']
