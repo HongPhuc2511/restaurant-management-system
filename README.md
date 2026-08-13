@@ -70,3 +70,18 @@ python manage.py migrate
 
 # Khởi chạy server Django
 python manage.py runserver
+```
+### 2. Chạy Frontend (ReactJS)
+
+#### 📋 Yêu cầu chuẩn bị
+* **Node.js**: `v18.x` hoặc `v20.x` trở lên
+* **npm**: `v9.x` trở lên (đi kèm khi cài Node.js)
+
+#### 🛠️ Các bước cài đặt & chạy dự án
+
+```bash
+# 1. Di chuyển vào thư mục frontend
+cd frontend
+
+# 2. Cài đặt các gói phụ thuộc (node_modules)
+npm install
