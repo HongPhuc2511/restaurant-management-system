@@ -14,6 +14,7 @@ export const endpoints={
     'apply-voucher': "/api/vouchers/apply/",
     'google-login': "/api/google-login/",
     'vouchers': "/api/vouchers/",
+    'chatbot': "/api/chatbot/",
 }
 
 export const authApis=(token)=>{

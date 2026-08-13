@@ -1,4 +1,5 @@
 import os
+import google.generativeai as genai
 import uuid
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -12,6 +13,7 @@ from rest_framework.views import APIView
 from core import serializers, paginators, enums
 from core.models import Category, Food, User, Reservation, RestaurantTable, Order, Payment, Bill, Voucher
 from core.vnpay import VNPAY
+from .utils import send_reservation_email
 
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
@@ -57,6 +59,8 @@ class ReservationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
             reservation.table.status = enums.TableStatus.RESERVED
             reservation.table.save()
 
+        send_reservation_email(reservation, action_type="CREATE")
+
     @action(methods=['patch'], detail=True, url_path='confirm', permission_classes=[permissions.IsAuthenticated])
     def confirm(self, request, pk):
         if request.user.role not in [enums.Role.ADMIN, enums.Role.STAFF]:
@@ -65,6 +69,8 @@ class ReservationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
         reservation = generics.get_object_or_404(Reservation, pk=pk)
         reservation.status = enums.ReservationStatus.CONFIRMED
         reservation.save()
+
+        send_reservation_email(reservation, action_type="CONFIRM")
         return Response(serializers.ReservationSerializer(reservation).data)
 
     @action(methods=['patch'], detail=True, url_path='cancel', permission_classes=[permissions.IsAuthenticated])
@@ -80,6 +86,7 @@ class ReservationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
             reservation.table.status = enums.TableStatus.AVAILABLE
             reservation.table.save()
 
+        send_reservation_email(reservation, action_type="CANCEL")
         return Response(serializers.ReservationSerializer(reservation).data)
 
 class RestaurantTableViewSet(viewsets.ViewSet, generics.ListAPIView):
@@ -338,4 +345,52 @@ class GoogleLoginView(APIView):
                  'first_name': user.first_name,
             }
         })
+
+class ChatbotView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        user_message = request.data.get('message', '').strip()
+        history = request.data.get('history', [])  # danh sách tin nhắn trước đó, để chatbot nhớ ngữ cảnh
+
+        if not user_message:
+            return Response({'error': 'Vui lòng nhập nội dung'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Lấy dữ liệu thật để chatbot tư vấn chính xác (không bịa thông tin)
+        available_tables = RestaurantTable.objects.filter(
+            active=True, status=enums.TableStatus.AVAILABLE
+        ).values('number', 'capacity')
+
+        table_info = "\n".join(
+            [f"- Bàn {t['number']}: sức chứa {t['capacity']} người" for t in available_tables]
+        ) or "Hiện không còn bàn trống."
+
+        system_context = f"""
+Bạn là trợ lý ảo tư vấn đặt bàn cho Nhà Hàng ABC. Nhiệm vụ của bạn:
+1. Tư vấn khách hàng đặt bàn: hỏi rõ họ tên, số điện thoại, thời gian đến, số người.
+2. Thông tin bàn trống hiện tại:
+{table_info}
+3. Giờ mở cửa: 9:00 - 22:00 hàng ngày.
+4. Sau khi có đủ thông tin, hướng dẫn khách vào trang "/reservation" trên website để hoàn tất đặt bàn (bạn không tự đặt bàn được).
+5. Trả lời ngắn gọn, thân thiện, bằng tiếng Việt.
+"""
+
+        try:
+            model = genai.GenerativeModel(
+                model_name="models/gemini-1.5-flash-latest",
+                system_instruction=system_context,
+            )
+
+            # Chuyển lịch sử chat cũ sang định dạng Gemini yêu cầu
+            gemini_history = [
+                {"role": "user" if h["role"] == "user" else "model", "parts": [h["content"]]}
+                for h in history
+            ]
+
+            chat = model.start_chat(history=gemini_history)
+            response = chat.send_message(user_message)
+
+            return Response({'reply': response.text})
+        except Exception as e:
+            return Response({'error': f'Chatbot gặp lỗi: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 # Create your views here.
