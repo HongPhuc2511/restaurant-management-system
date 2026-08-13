@@ -85,3 +85,17 @@ cd frontend
 
 # 2. Cài đặt các gói phụ thuộc (node_modules)
 npm install
+🚀 Khởi chạy ứng dụng
+Chạy trên môi trường phát triển (Development):
+
+Bash
+# Nếu dùng Vite:
+npm run dev
+
+# Hoặc nếu dùng Create React App:
+npm start
+Sau khi lệnh chạy thành công, mở trình duyệt và truy cập:
+
+👉 Vite: http://localhost:5173/
+
+👉 Create React App: http://localhost:3000/
