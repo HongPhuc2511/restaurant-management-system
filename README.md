@@ -55,7 +55,7 @@ cd backend
 python -m venv .venv
 -Trên Windows:
 .venv\Scripts\activate
-# Trên macOS/Linux:
+ Trên macOS/Linux:
 source .venv/bin/activate
 
 -Cài đặt các thư viện phụ thuộc
@@ -80,22 +80,22 @@ python manage.py runserver
 #### 🛠️ Các bước cài đặt & chạy dự án
 
 ```bash
-# 1. Di chuyển vào thư mục frontend
+1. Di chuyển vào thư mục frontend
 cd frontend
 
-# 2. Cài đặt các gói phụ thuộc (node_modules)
+2. Cài đặt các gói phụ thuộc (node_modules)
 npm install
 🚀 Khởi chạy ứng dụng
 Chạy trên môi trường phát triển (Development):
 
 Bash
-# Nếu dùng Vite:
+-Nếu dùng Vite:
 npm run dev
 
-# Hoặc nếu dùng Create React App:
+-Hoặc nếu dùng Create React App:
 npm start
 Sau khi lệnh chạy thành công, mở trình duyệt và truy cập:
 
-👉 Vite: http://localhost:5173/
+Vite: http://localhost:5173/
 
-👉 Create React App: http://localhost:3000/
+Create React App: http://localhost:3000/
