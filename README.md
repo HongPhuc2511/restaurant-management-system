@@ -48,27 +48,27 @@ Hệ thống quản lý nhà hàng toàn diện hỗ trợ đặt bàn trực tu
 
 ### 1. Chạy Backend (Django API)
 ```bash
-# Di chuyển vào thư mục backend
+-Di chuyển vào thư mục backend
 cd backend
 
-# Tạo và kích hoạt môi trường ảo (Virtual Environment)
+-Tạo và kích hoạt môi trường ảo (Virtual Environment)
 python -m venv .venv
-# Trên Windows:
+-Trên Windows:
 .venv\Scripts\activate
 # Trên macOS/Linux:
 source .venv/bin/activate
 
-# Cài đặt các thư viện phụ thuộc
+-Cài đặt các thư viện phụ thuộc
 pip install -r requirements.txt
 
-# Tạo file .env dựa trên file cấu hình mẫu và điền thông số DB/Mail
+-Tạo file .env dựa trên file cấu hình mẫu và điền thông số DB/Mail
 cp .env.example .env
 
-# Thực thi Migration cơ sở dữ liệu
+-Thực thi Migration cơ sở dữ liệu
 python manage.py makemigrations
 python manage.py migrate
 
-# Khởi chạy server Django
+-Khởi chạy server Django
 python manage.py runserver
 ```
 ### 2. Chạy Frontend (ReactJS)
