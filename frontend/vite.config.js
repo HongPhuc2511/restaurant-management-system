@@ -10,4 +10,7 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin-allow-popups", // THÊM
     },
   },
+  build: {
+    sourcemap: true, // Thêm block này để bật sourcemap
+  },
 })

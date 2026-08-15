@@ -14,12 +14,11 @@ export const endpoints={
     'apply-voucher': "/api/vouchers/apply/",
     'google-login': "/api/google-login/",
     'vouchers': "/api/vouchers/",
-    'chatbot': "/api/chatbot/",
 }
 
 export const authApis=(token)=>{
     return axios.create({
-        baseURL:"http://127.0.0.1:8000/",
+        baseURL:"https://hongphuc.pythonanywhere.com/",
         headers:{
             'Authorization':`Bearer ${token}`
         }   
@@ -27,5 +26,5 @@ export const authApis=(token)=>{
 }
 
 export default axios.create({
-    baseURL:"http://127.0.0.1:8000/"
+    baseURL:"https://hongphuc.pythonanywhere.com/"
 })

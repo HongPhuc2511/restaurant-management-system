@@ -2,8 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from core import views
-from core.views import CreateVNPAYPaymentView, VNPayCallbackView, ApplyVoucherView, GoogleLoginView, ChatbotView
-
+from core.views import CreateVNPAYPaymentView, VNPayCallbackView, ApplyVoucherView, GoogleLoginView
 router = DefaultRouter()
 router.register('categories', views.CategoryViewSet, basename='category')
 router.register('foods', views.FoodViewSet, basename='food')
@@ -18,6 +17,5 @@ urlpatterns = [
     path('payment/vnpay-callback/', VNPayCallbackView.as_view(), name='vnpay-callback'),
     path('vouchers/apply/', ApplyVoucherView.as_view(), name='apply-voucher'),
     path('google-login/', GoogleLoginView.as_view(), name='google-login'),
-    path('chatbot/', ChatbotView.as_view(), name='chatbot'),
     path('', include(router.urls)),
 ]

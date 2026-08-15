@@ -22,8 +22,7 @@ function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
   const [cart, cartDispatch] = useReducer(MyCartReducer, []);
 
-  console.log("[" + import.meta.env.VITE_GOOGLE_CLIENT_ID + "]");
-  console.log("Length:", import.meta.env.VITE_GOOGLE_CLIENT_ID.length);
+  
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <MyUserContext.Provider value={[user, dispatch]}>

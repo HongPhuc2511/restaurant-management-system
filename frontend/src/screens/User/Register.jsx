@@ -64,8 +64,7 @@ const Register = () => {
       
       <div
         className="min-h-screen flex items-center justify-center bg-cover bg-center px-4 py-24"
-        style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${background})` }}
-      >
+        style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${background})` }}>
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 my-4">
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-gray-800">Đăng ký tài khoản</h1>
