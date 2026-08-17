@@ -8,7 +8,7 @@ import { authApis, endpoints } from "../../configs/Apis";
 const Cart = () => {
   const [cart, cartDispatch] = useContext(MyCartContext);
   const [user] = useContext(MyUserContext);
-  const [err, setErr] = useState();
+  const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
@@ -47,15 +47,19 @@ const Cart = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+      
+      // Đã thêm address vào payload
       const orderData = {
+        address: address,
         items: cart.map((item) => ({ food: item.food.id, quantity: item.quantity })),
       };
+
       const resOrder = await authApis(token).post(endpoints["orders"], orderData);
       setBillId(resOrder.data.bill.id);
       setFinalAmount(resOrder.data.bill.final_amount);
     } catch (ex) {
       console.error(ex);
-      setErr("Đặt món thất bại, vui lòng thử lại!");
+      setErr(ex.response?.data?.message || "Đặt món thất bại, vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
@@ -114,12 +118,11 @@ const Cart = () => {
 
   return (
     <div>
-      <Header/>
+      <Header />
 
       <div className="bg-gray-50 min-h-screen">
         <div className="max-w-5xl mx-auto px-6 py-12">
-
-          {/* Thanh bước 1/2 */}
+          {/* Progress Step */}
           <div className="flex items-center gap-3 mb-8">
             <div className={`flex items-center gap-2 ${billId === null ? "text-red-600" : "text-gray-400"}`}>
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${billId === null ? "bg-red-600 text-white" : "bg-gray-200"}`}>1</div>
@@ -147,47 +150,50 @@ const Cart = () => {
               <p className="text-gray-500">Giỏ hàng đang trống.</p>
             </div>
           ) : billId === null ? (
-            // ==== BƯỚC 1 ====
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Danh sách món - cột trái, rộng hơn */}
-              <div className="lg:col-span-2 flex flex-col gap-3">
-                {cart.map((item) => (
-                  <div key={item.food.id} className="flex items-center gap-4 bg-white rounded-xl shadow-sm p-4">
-                    <img src={item.food.image} alt={item.food.name} className="w-20 h-20 object-cover rounded-lg" />
+              {/* Cột bên trái: Danh sách món ăn và Ô địa chỉ */}
+              <div className="lg:col-span-2 flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
+                  {cart.map((item) => (
+                    <div key={item.food.id} className="flex items-center gap-4 bg-white rounded-xl shadow-sm p-4">
+                      <img src={item.food.image} alt={item.food.name} className="w-20 h-20 object-cover rounded-lg" />
 
-                    <div className="flex-1 min-w-0">
-                      <h2 className="font-semibold text-gray-800 truncate">{item.food.name}</h2>
-                      <p className="text-red-600 font-medium text-sm mt-0.5">
-                        {Number(item.food.price).toLocaleString("vi-VN")}đ
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-semibold text-gray-800 truncate">{item.food.name}</h2>
+                        <p className="text-red-600 font-medium text-sm mt-0.5">
+                          {Number(item.food.price).toLocaleString("vi-VN")}đ
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button onClick={() => updateQuantity(item.food.id, item.quantity - 1)} className="w-8 h-8 rounded-full border border-gray-200 hover:bg-gray-50 transition">-</button>
+                        <span className="w-6 text-center font-medium">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.food.id, item.quantity + 1)} className="w-8 h-8 rounded-full border border-gray-200 hover:bg-gray-50 transition">+</button>
+                      </div>
+
+                      <button onClick={() => removeItem(item.food.id)} className="text-gray-400 hover:text-red-500 transition shrink-0">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" />
+                        </svg>
+                      </button>
                     </div>
+                  ))}
+                </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button onClick={() => updateQuantity(item.food.id, item.quantity - 1)} className="w-8 h-8 rounded-full border border-gray-200 hover:bg-gray-50 transition">-</button>
-                      <span className="w-6 text-center font-medium">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.food.id, item.quantity + 1)} className="w-8 h-8 rounded-full border border-gray-200 hover:bg-gray-50 transition">+</button>
-                    </div>
-
-                    <button onClick={() => removeItem(item.food.id)} className="text-gray-400 hover:text-red-500 transition shrink-0">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="bg-white rounded-2xl shadow-sm p-6 mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Địa chỉ nhận hàng</label>
-                <input
+                {/* Khung địa chỉ nhận hàng được đưa vào đây */}
+                <div className="bg-white rounded-2xl shadow-sm p-6">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Địa chỉ nhận hàng</label>
+                  <input
                     type="text"
                     placeholder="Số nhà, đường, phường/xã, quận/huyện..."
                     value={address}
-                    onChange={e => setAddress(e.target.value)}
+                    onChange={(e) => setAddress(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition"
-                />
+                  />
+                </div>
               </div>
-              {/* Tóm tắt - cột phải, sticky */}
+
+              {/* Cột bên phải: Chọn thanh toán & Tổng tiền */}
               <div className="bg-white rounded-2xl shadow-sm p-6 h-fit lg:sticky lg:top-24">
                 <h3 className="font-semibold text-gray-800 mb-4">Phương thức thanh toán</h3>
 
@@ -221,7 +227,7 @@ const Cart = () => {
               </div>
             </div>
           ) : (
-            // ==== BƯỚC 2 ====
+            /* Màn hình Xác nhận Voucher và Hoàn tất thanh toán */
             <div className="max-w-md mx-auto bg-white rounded-2xl shadow-sm p-8">
               <p className="text-sm text-gray-500 mb-5">Đơn hàng đã tạo. Nhập mã giảm giá (nếu có) rồi xác nhận thanh toán:</p>
 

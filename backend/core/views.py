@@ -116,6 +116,42 @@ class OrderViewSet(viewsets.ViewSet, generics.ListAPIView,generics.CreateAPIView
             serializer.save(customer=user)
 
 
+class PaymentView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        bill_id = request.data.get('bill')
+        amount = request.data.get('amount')
+        payment_method = request.data.get('payment_method', enums.PaymentMethod.CASH)
+
+        if not bill_id or not amount:
+            return Response({'error': 'Thiếu bill_id hoặc số tiền'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            bill = Bill.objects.get(pk=bill_id)
+
+            if hasattr(bill, 'order') and bill.order:
+                bill.order.status = getattr(enums.OrderStatus, 'PROCESSING', bill.order.status)
+                bill.order.save()
+
+            payment = Payment.objects.create(
+                bill=bill,
+                amount=amount,
+                payment_method=payment_method,
+                payment_status=enums.PaymentStatus.SUCCESS if payment_method == enums.PaymentMethod.CASH else enums.PaymentStatus.PENDING,
+                paid_at=timezone.now() if payment_method == enums.PaymentMethod.CASH else None
+            )
+
+            return Response({
+                'message': 'Thanh toán COD thành công!',
+                'payment_id': payment.id
+            }, status=status.HTTP_201_CREATED)
+
+        except Bill.DoesNotExist:
+            return Response({'error': 'Không tìm thấy hóa đơn'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 class CreateVNPAYPaymentView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

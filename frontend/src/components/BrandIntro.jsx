@@ -51,7 +51,6 @@ const BrandIntro = () => {
                 </div>
             </div>
 
-            {/* Bên phải - carousel ảnh */}
             <div className="relative">
                 <div className="rounded-3xl overflow-hidden shadow-xl aspect-[7/5]">
                     {images.map((img, i) => (
@@ -66,7 +65,6 @@ const BrandIntro = () => {
                     ))}
                 </div>
 
-                {/* Nút trái/phải */}
                 <button
                     onClick={prev}
                     className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white w-9 h-9 rounded-full flex items-center justify-center shadow-md transition"
@@ -84,7 +82,6 @@ const BrandIntro = () => {
                     </svg>
                 </button>
 
-                {/* Chấm chỉ vị trí ảnh */}
                 <div className="flex justify-center gap-2 mt-4">
                     {images.map((_, i) => (
                         <button

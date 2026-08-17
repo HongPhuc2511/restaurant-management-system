@@ -7,7 +7,7 @@ import Login from "./screens/User/Login";
 import Register from "./screens/User/Register";
 import { MyUserContext, MyCartContext } from "./configs/Contexts";
 import { MyUserReducer, MyCartReducer } from "./reducers/reducers";
-import { useReducer } from "react";
+import { useReducer,useState,useEffect } from "react";
 import Home from "./screens/Home/Home";
 import Reservation from "./screens/Home/Reservation";
 import Cart from "./screens/Home/Cart";
@@ -17,12 +17,32 @@ import FoodDetail from "./screens/Home/FoodDetail";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import Promotions from "./screens/Home/Promotions";
 import PromotionDetail from "./screens/Home/PromotionDetail";
+import { authApis, endpoints } from "./configs/Apis";
+import MyOrder from "./screens/Home/MyOrder";
 
 function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
   const [cart, cartDispatch] = useReducer(MyCartReducer, []);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
-  
+  useEffect(() => {   
+    const restoreUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          let res = await authApis(token).get(endpoints['current-user']);
+          dispatch({ type: "LOGIN", payload: res.data });
+        } catch (ex) {
+          localStorage.removeItem('token');
+        }
+      }
+      setCheckingAuth(false);
+    };
+    restoreUser();
+  }, []);
+
+  if (checkingAuth) return <div className="p-10 text-center">Đang tải...</div>;
+
   return (
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <MyUserContext.Provider value={[user, dispatch]}>
@@ -48,6 +68,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/reservation" element={<Reservation/>}/>
             <Route path="/cart" element={<Cart/>}/>
+            <Route path="/orders" element={<MyOrder />} />
             <Route path="/vnpay-return" element={<VnPayReturn />} />
             <Route path="/my-reservation" element={<MyReservation />} />
             <Route path="/foods/:id" element={<FoodDetail />} />
