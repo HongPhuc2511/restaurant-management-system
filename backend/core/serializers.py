@@ -136,8 +136,7 @@ class VoucherSerializer(serializers.ModelSerializer):
             data['image'] = instance.image.url
         return data
 
-
-class Serializer(serializers.ModelSerializer):
+class FoodReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodReview
         fields = ['id', 'rating', 'comment', 'customer', 'food', 'created_date']
