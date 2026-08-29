@@ -75,10 +75,13 @@ class ReservationViewSet(viewsets.ViewSet, generics.ListAPIView, generics.Create
 
     @action(methods=['patch'], detail=True, url_path='cancel', permission_classes=[permissions.IsAuthenticated])
     def cancel(self, request, pk):
-        if request.user.role not in [enums.Role.ADMIN, enums.Role.STAFF]:
-            return Response({'error': 'Bạn không có quyền thực hiện'}, status=status.HTTP_403_FORBIDDEN)
-
         reservation = generics.get_object_or_404(Reservation, pk=pk)
+        is_staff_or_admin = request.user.role in [enums.Role.ADMIN, enums.Role.STAFF]
+        is_owner = (reservation.customer == request.user)
+
+        if not (is_staff_or_admin or is_owner):
+            return Response({'error': 'Bạn không có quyền hủy đơn đặt bàn này'}, status=status.HTTP_403_FORBIDDEN)
+
         reservation.status = enums.ReservationStatus.CANCELLED
         reservation.save()
 

@@ -29,6 +29,23 @@ const MyReservation = () => {
         }
     }
 
+    const handleCancel = async (id) => {
+        if (!window.confirm("Bạn có chắc chắn muốn hủy lượt đặt bàn này không?")) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            await authApis(token).patch(`${endpoints['reservations']}${id}/cancel/`);
+            
+            setReservations(prev =>
+                prev.map(r => r.id === id ? { ...r, status: "CANCELLED" } : r)
+            );
+            alert("Đã hủy đặt bàn thành công!");
+        } catch (ex) {
+            console.error(ex);
+            alert(ex.response?.data?.error || ex.response?.data?.message || "Không thể hủy đặt bàn. Vui lòng thử lại!");
+        }
+    };
+
     useEffect(() => {
         loadReservations();
     }, []);
@@ -62,9 +79,20 @@ const MyReservation = () => {
                                 {r.note && <p className="text-sm text-gray-500 mt-1">Ghi chú: {r.note}</p>}
                             </div>
 
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusLabel[r.status]?.color}`}>
-                                {statusLabel[r.status]?.text}
-                            </span>
+                            <div className="flex items-center gap-3">
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusLabel[r.status]?.color}`}>
+                                    {statusLabel[r.status]?.text}
+                                </span>
+
+                                {r.status !== "CANCELLED" && (
+                                    <button
+                                        onClick={() => handleCancel(r.id)}
+                                        className="px-3 py-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-medium rounded-full transition-colors"
+                                    >
+                                        Hủy đặt bàn
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -73,6 +101,6 @@ const MyReservation = () => {
             <Footer />
         </div>
     );
-}
+};
 
 export default MyReservation;
