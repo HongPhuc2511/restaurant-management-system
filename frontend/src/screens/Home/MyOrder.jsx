@@ -52,7 +52,7 @@ const MyOrder = () => {
                   <div>
                     <span className="font-bold text-gray-800">Đơn hàng #{order.id}</span>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      Ngày đặt: {new Date(order.created_date || order.created_at).toLocaleDateString("vi-VN")}
+                      Ngày đặt: {order.order_time ? new Date(order.order_time).toLocaleDateString("vi-VN") : "Đang cập nhật"}
                     </p>
                   </div>
                   <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-50 text-blue-600">
