@@ -22,7 +22,7 @@ def send_reservation_email(reservation, action_type="CREATE"):
     table_number = f"Bàn {reservation.table.number}" if reservation.table else "Sẽ được xếp khi đến"
 
     if action_type == "CREATE":
-        subject = "[Nhà Hàng ABC] Xác nhận yêu cầu đặt bàn"
+        subject = "Nhà hàng Ẩm thực Việt Xác nhận yêu cầu đặt bàn"
         message = f"""Xin chào {customer_name},
 
 Cảm ơn bạn đã đặt bàn tại Nhà Hàng Ẩm thực Việt! Yêu cầu của bạn đã được ghi nhận.
@@ -37,7 +37,7 @@ THÔNG TIN ĐẶT BÀN:
 Bộ phận nhà hàng sẽ kiểm tra và xác nhận sớm nhất.
 """
     elif action_type == "CONFIRM":
-        subject = "[Nhà Hàng ABC] Đặt bàn đã ĐƯỢC XÁC NHẬN"
+        subject = "Nhà hàng Ẩm thực Việt Đặt bàn đã ĐƯỢC XÁC NHẬN"
         message = f"""Xin chào {customer_name},
 
 Phiếu đặt bàn #{reservation.id} của bạn đã được nhân viên nhà hàng XÁC NHẬN thành công.
@@ -45,7 +45,7 @@ Phiếu đặt bàn #{reservation.id} của bạn đã được nhân viên nhà
 Rất hân hạnh được phục vụ bạn vào lúc {formatted_time}.
 """
     elif action_type == "CANCEL":
-        subject = "[Nhà Hàng ABC] Thông báo HỦY đặt bàn"
+        subject = "Nhà hàng Ẩm thực Việt thông báo HỦY đặt bàn"
         message = f"""Xin chào {customer_name},
 
 Phiếu đặt bàn #{reservation.id} của bạn vào lúc {formatted_time} đã bị HỦY.
