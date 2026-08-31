@@ -3,9 +3,10 @@ import json
 from django import forms
 from django.contrib import admin
 from django.db.models import Sum, Count
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncMonth, TruncDay, TruncQuarter
 from django.template.response import TemplateResponse
 from django.urls import path
+from django.utils.dateparse import parse_date
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
@@ -206,15 +207,51 @@ class RestaurantAdminSite(admin.AdminSite):
         return custom_urls + urls
 
     def restaurant_stats(self, request):
+        group_by = request.GET.get('group_by', 'month')
+        start_date_str = request.GET.get('start_date', '')
+        end_date_str = request.GET.get('end_date', '')
+
+        payments = Payment.objects.filter(payment_status=enums.PaymentStatus.SUCCESS)
+
+        if start_date_str:
+            start_date = parse_date(start_date_str)
+            if start_date:
+                payments = payments.filter(paid_at__date__gte=start_date)
+
+        if end_date_str:
+            end_date = parse_date(end_date_str)
+            if end_date:
+                payments = payments.filter(paid_at__date__lte=end_date)
+
+        if group_by == 'day':
+            trunc_func = TruncDay('paid_at')
+        elif group_by == 'quarter':
+            trunc_func = TruncQuarter('paid_at')
+        else:
+            group_by = 'month'
+            trunc_func = TruncMonth('paid_at')
+
         revenue_qs = (
-            Payment.objects.filter(payment_status=enums.PaymentStatus.SUCCESS)
-            .annotate(month=TruncMonth('paid_at'))
-            .values('month')
+            payments.annotate(period=trunc_func)
+            .values('period')
             .annotate(total=Sum('amount'))
-            .order_by('month')
+            .order_by('period')
         )
-        revenue_labels = [r['month'].strftime('%m/%Y') for r in revenue_qs]
-        revenue_data = [float(r['total']) for r in revenue_qs]
+
+        revenue_labels = []
+        for r in revenue_qs:
+            p = r['period']
+            if not p:
+                continue
+            if group_by == 'day':
+                revenue_labels.append(p.strftime('%d/%m/%Y'))
+            elif group_by == 'quarter':
+                quarter_num = (p.month - 1) // 3 + 1
+                revenue_labels.append(f"Q{quarter_num}/{p.year}")
+            else:
+                revenue_labels.append(p.strftime('%m/%Y'))
+
+        revenue_data = [float(r['total']) for r in revenue_qs if r['period']]
 
         top_foods_qs = (
             Food.objects.annotate(sold=Sum('order_items__quantity'))
@@ -236,10 +273,7 @@ class RestaurantAdminSite(admin.AdminSite):
             .values('id', 'name', 'unit', 'quantity')
         )
 
-        total_revenue = Payment.objects.filter(
-            payment_status=enums.PaymentStatus.SUCCESS
-        ).aggregate(total=Sum('amount'))['total'] or 0
-
+        total_revenue = payments.aggregate(total=Sum('amount'))['total'] or 0
         total_orders = Order.objects.count()
         total_customers = User.objects.filter(role=enums.Role.USER).count()
 
@@ -248,12 +282,15 @@ class RestaurantAdminSite(admin.AdminSite):
             'total_orders': total_orders,
             'total_customers': total_customers,
             'low_stock_ingredients': low_stock_ingredients,
-            'revenue_labels_json': json.dumps(revenue_labels),
-            'revenue_data_json': json.dumps(revenue_data),
-            'top_food_labels_json': json.dumps(top_food_labels),
-            'top_food_data_json': json.dumps(top_food_data),
-            'status_labels_json': json.dumps(status_labels),
-            'status_data_json': json.dumps(status_data),
+            'revenue_labels': revenue_labels,
+            'revenue_data': revenue_data,
+            'top_food_labels': top_food_labels,
+            'top_food_data': top_food_data,
+            'status_labels': status_labels,
+            'status_data': status_data,
+            'selected_group_by': group_by,
+            'start_date': start_date_str,
+            'end_date': end_date_str,
         })
 
 class FoodReviewAdmin(admin.ModelAdmin):
