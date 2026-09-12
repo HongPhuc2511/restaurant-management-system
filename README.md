@@ -21,14 +21,6 @@ Hệ thống quản lý nhà hàng toàn diện hỗ trợ đặt bàn trực tu
 
 ---
 
-## 👥 Thành Viên Thực Hiện
-
-| Họ và Tên | Vai Trò Chính |
-| :--- | :--- |
-| **Hoàng Hồng Phúc** | Full-stack Developer (Backend Architecture & Frontend Integration) |
-
----
-
 ## 🛠️ Công Nghệ Sử Dụng
 
 * **Backend**: Python, Django REST Framework, OAuth2, `django-oauth2-toolkit`
