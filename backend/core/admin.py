@@ -24,7 +24,7 @@ class StaffAllowedMixin:
     def has_view_permission(self, request, obj=None):
         return self._check_role(request)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request,obj=None):
         return self._check_role(request)
 
     def has_change_permission(self, request, obj=None):
@@ -46,7 +46,7 @@ class AdminOnlyMixin:
     def has_view_permission(self, request, obj=None):
         return self._check_role(request)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request,obj=None):
         return self._check_role(request)
 
     def has_change_permission(self, request, obj=None):
