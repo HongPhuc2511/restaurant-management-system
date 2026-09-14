@@ -1,0 +1,72 @@
+name: Restaurant Management CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  # -------------------------------------------------------------
+  # 1. KIỂM TRA BACKEND (Django)
+  # -------------------------------------------------------------
+  backend-ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Thiết lập môi trường Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Cài đặt Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Kiểm tra cấu hình Django (Check syntax & settings)
+        env:
+          SECRET_KEY: "ci-secret-key-testing"
+          DEBUG: "True"
+        run: |
+          python manage.py check
+
+      - name: Chạy Unittest / Pytest
+        env:
+          SECRET_KEY: "ci-secret-key-testing"
+          DEBUG: "True"
+        run: |
+          python manage.py test
+
+  # -------------------------------------------------------------
+  # 2. KIỂM TRA FRONTEND (React)
+  # -------------------------------------------------------------
+  frontend-ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Thiết lập môi trường Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./frontend/package-lock.json
+
+      - name: Cài đặt Node Modules
+        run: npm ci
+
+      - name: Build thử nghiệm (Kiểm tra lỗi biên dịch JSX/Tailwind)
+        run: npm run build
