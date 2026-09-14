@@ -88,10 +88,17 @@ const FoodDetail = () => {
                         Quay lại thực đơn
                     </Link>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                        {/* Bên trái - ảnh món ăn */}
-                        <div className="bg-white rounded-2xl shadow-md p-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+                        {/* Bên trái - ảnh món ăn & Mô tả bên dưới */}
+                        <div className="bg-white rounded-2xl shadow-md p-4">
                             <img src={food.image} alt={food.name} className="w-full aspect-square object-cover rounded-xl" />
+                            
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <h3 className="font-semibold text-gray-800 mb-1">Mô tả món ăn</h3>
+                                <p className="text-gray-600 text-sm leading-relaxed">
+                                    {food.description || "Chưa có mô tả cho món này."}
+                                </p>
+                            </div>
                         </div>
 
                         {/* Bên phải - thông tin + đánh giá */}
@@ -108,9 +115,6 @@ const FoodDetail = () => {
 
                                 <p className="text-red-600 font-bold text-2xl mt-3">
                                     {Number(food.price).toLocaleString("vi-VN")}đ
-                                </p>
-                                <p className="text-gray-600 mt-3 leading-relaxed">
-                                    {food.description || "Chưa có mô tả cho món này."}
                                 </p>
 
                                 <button
@@ -132,11 +136,11 @@ const FoodDetail = () => {
                                     {reviews.map(r => (
                                         <div key={r.id} className="flex gap-3">
                                             <div className="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-bold shrink-0">
-                                                {r.customer.username.charAt(0).toUpperCase()}
+                                                {r.customer?.username?.charAt(0).toUpperCase() || "U"}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="font-medium text-sm text-gray-800">{r.customer.username}</span>
+                                                    <span className="font-medium text-sm text-gray-800">{r.customer?.username}</span>
                                                     <div className="flex gap-0.5">
                                                         {[1, 2, 3, 4, 5].map(n => <StarIcon key={n} filled={n <= r.rating} />)}
                                                     </div>
