@@ -18,7 +18,9 @@ const MyOrder = () => {
           return;
         }
         const res = await authApis(token).get(endpoints["orders"]);
-        setOrders(res.data.results || res.data);
+        const data = res.data.results || res.data;
+        
+        setOrders([...data].reverse());
       } catch (ex) {
         console.error(ex);
         setErr("Không thể tải danh sách đơn hàng!");
@@ -30,7 +32,6 @@ const MyOrder = () => {
     fetchOrders();
   }, []);
 
-  // Hàm hiển thị Badge trạng thái tương ứng với sắc thái màu
   const renderStatusBadge = (status) => {
     const statusMap = {
       PENDING: { label: "Chờ xử lý", style: "bg-amber-50 text-amber-700 border-amber-200" },
@@ -57,7 +58,6 @@ const MyOrder = () => {
       <Header />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 w-full flex-1">
-        {/* Tiêu đề & Tổng số đơn */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
@@ -74,7 +74,6 @@ const MyOrder = () => {
           )}
         </div>
 
-        {/* Trạng thái Loading */}
         {loading ? (
           <div className="space-y-4">
             {[1, 2].map((n) => (
@@ -94,7 +93,6 @@ const MyOrder = () => {
             ))}
           </div>
         ) : err ? (
-          /* Trạng thái Lỗi */
           <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-3xl text-center">
             <p className="text-sm font-semibold">{err}</p>
             <Link to="/login" className="inline-block mt-3 text-xs font-bold text-red-600 underline">
@@ -102,7 +100,6 @@ const MyOrder = () => {
             </Link>
           </div>
         ) : orders.length === 0 ? (
-          /* Trạng thái Chưa có đơn hàng */
           <div className="bg-white rounded-3xl p-10 sm:p-16 text-center border border-gray-100 shadow-sm">
             <div className="w-20 h-20 mx-auto bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -121,14 +118,12 @@ const MyOrder = () => {
             </Link>
           </div>
         ) : (
-          /* Danh sách Đơn hàng */
           <div className="flex flex-col gap-6">
             {orders.map((order) => (
               <div
                 key={order.id}
                 className="bg-white rounded-3xl p-5 sm:p-7 shadow-sm border border-gray-100 hover:shadow-md transition duration-300"
               >
-                {/* Header card đơn hàng */}
                 <div className="flex flex-wrap items-center justify-between pb-4 border-b border-gray-100 gap-2">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-700 font-bold text-sm">
@@ -144,7 +139,6 @@ const MyOrder = () => {
                   {renderStatusBadge(order.status)}
                 </div>
 
-                {/* Danh sách món ăn trong đơn */}
                 <div className="py-4 space-y-3.5">
                   {order.items?.map((item) => (
                     <div key={item.id || item.food?.id} className="flex justify-between items-center text-sm">
@@ -176,7 +170,6 @@ const MyOrder = () => {
                   ))}
                 </div>
 
-                {/* Footer card: Địa chỉ & Tổng tiền */}
                 <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-3 bg-gray-50/50 p-4 rounded-2xl">
                   <div className="flex items-center gap-2 text-xs text-gray-500 min-w-0">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-gray-400">

@@ -31,7 +31,7 @@ const getInitialCart = () => {
 
 function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
-  const [cart, cartDispatch] = useReducer(MyCartReducer, []);
+  const [cart, cartDispatch] = useReducer(MyCartReducer, null, getInitialCart);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {

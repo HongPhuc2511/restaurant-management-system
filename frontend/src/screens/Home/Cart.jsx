@@ -81,39 +81,40 @@ const Cart = () => {
     }
   };
 
-  const confirmPayment = async () => {
-    setErr("");
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
+    const confirmPayment = async () => {
+      setErr("");
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
 
-      if (paymentMethod === "VNPAY") {
-        const resPay = await authApis(token).post(endpoints["create-vnpay"], {
-          order_id: billId,
-          amount: finalAmount,
-        });
-        
-        if (resPay.data && resPay.data.payment_url) {
-          window.location.href = resPay.data.payment_url;
+        if (paymentMethod === "VNPAY") {
+          const resPay = await authApis(token).post(endpoints["create-vnpay"], {
+            order_id: billId,
+            amount: finalAmount,
+          });
+          
+          if (resPay.data && resPay.data.payment_url) {
+            cartDispatch({ type: "CLEAR_CART" });
+            window.location.href = resPay.data.payment_url;
+          } else {
+            setErr("Không thể tạo liên kết thanh toán VNPAY!");
+          }
         } else {
-          setErr("Không thể tạo liên kết thanh toán VNPAY!");
+          await authApis(token).post(endpoints["payments"], {
+            bill: billId,
+            amount: finalAmount,
+            payment_method: "CASH",
+          });
+          cartDispatch({ type: "CLEAR_CART" });
+          nav("/orders");
         }
-      } else {
-        await authApis(token).post(endpoints["payments"], {
-          bill: billId,
-          amount: finalAmount,
-          payment_method: "CASH",
-        });
-        cartDispatch({ type: "CLEAR_CART" });
-        nav("/orders");
+      } catch (ex) {
+        console.error(ex);
+        setErr("Thanh toán thất bại, vui lòng thử lại!");
+      } finally {
+        setLoading(false);
       }
-    } catch (ex) {
-      console.error(ex);
-      setErr("Thanh toán thất bại, vui lòng thử lại!");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   return (
     <div>
