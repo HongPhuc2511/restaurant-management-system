@@ -1,15 +1,17 @@
-import axios from "axios"
+import axios from "axios";
 
-export const endpoints={
+const BASE_URL = import.meta.env.VITE_BASE_URL || "https://hongphuc.pythonanywhere.com/";
+
+export const endpoints = {
     'categories': "/api/categories/",
-    'foods':"/api/foods/",
-    'login':"/o/token/",
-    'register':"/api/users/",
+    'foods': "/api/foods/",
+    'login': "/o/token/",
+    'register': "/api/users/",
     'current-user': "/api/users/current-user/", 
     'available-tables': "/api/tables/available/",
     'reservations': "/api/reservations/",
     'orders': "/api/orders/",
-    'payments':"/api/payments/",
+    'payments': "/api/payments/",
     'create-vnpay': '/api/payment/create-vnpay/',
     'vnpay-callback': '/api/payment/vnpay-callback/',
     'apply-voucher': "/api/vouchers/apply/",
@@ -17,15 +19,15 @@ export const endpoints={
     'vouchers': "/api/vouchers/",
 }
 
-export const authApis=(token)=>{
+export const authApis = (token) => {
     return axios.create({
-        baseURL:"http://127.0.0.1:8000/",
-        headers:{
-            'Authorization':`Bearer ${token}`
+        baseURL: BASE_URL,
+        headers: {
+            'Authorization': `Bearer ${token}`
         }   
     });
 }
 
 export default axios.create({
-    baseURL:"http://127.0.0.1:8000/"
-})
+    baseURL: BASE_URL
+});

@@ -1,26 +1,16 @@
-import { useEffect, useState,useContext } from "react";
+import { useState, useContext } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import Apis, {authApis, endpoints } from "../../configs/Apis";
+import Apis, { authApis, endpoints } from "../../configs/Apis";
 import { MyUserContext } from "../../configs/Contexts";
 import background from "../../assets/nhahang.webp";
 
-const Reservation=()=>{
+const Reservation = () => {
     const [user] = useContext(MyUserContext);
-    const [tables, setTables] = useState([]);
     const [form, setForm] = useState({});
     const [err, setErr] = useState();
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
-
-    const loadTables = async () => {
-        let res = await Apis.get(endpoints['available-tables']);
-        setTables(res.data);
-    }
-
-    useEffect(() => {
-        loadTables();
-    }, []);
 
     const validate = () => {
         const required = [
@@ -30,15 +20,11 @@ const Reservation=()=>{
             { field: 'number_of_people', label: 'Số người' },
         ];
 
-        for (let i of required)
+        for (let i of required) {
             if (!form[i.field]) {
                 setErr(`Vui lòng nhập ${i.label}!`);
                 return false;
             }
-
-        if (!form.table) {
-            setErr("Vui lòng chọn bàn!");
-            return false;
         }
 
         return true;
@@ -67,10 +53,10 @@ const Reservation=()=>{
 
     return (
         <div>
-            <Header/>
+            <Header />
             <div className="min-h-screen flex items-center justify-center bg-cover bg-center px-4 py-24"
-                    style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${background})` }}>
-                <div className="bg-gradient-to-b from-red-50 to-white min-h-screen rounded-3xl">
+                style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${background})` }}>
+                <div className="bg-gradient-to-b from-red-50 to-white min-h-screen rounded-3xl w-full max-w-2xl">
                     <div className="max-w-2xl mx-auto px-6 pt-20 pb-16">
 
                         <div className="text-center mb-8">
@@ -90,7 +76,7 @@ const Reservation=()=>{
                                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                                         <path d="M22 4L12 14.01l-3-3" />
                                     </svg>
-                                    Đặt bàn thành công! Chờ nhân viên xác nhận.
+                                    Đặt bàn thành công! Chờ nhân viên xác nhận và xếp bàn.
                                 </div>
                             )}
 
@@ -142,29 +128,13 @@ const Reservation=()=>{
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Chọn bàn</label>
-                                    <select
-                                        value={form.table || ""}
-                                        onChange={t => setForm({ ...form, table: t.target.value })}
-                                        className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition bg-white"
-                                    >
-                                        <option value="">-- Chọn bàn trống --</option>
-                                        {tables.map(table => (
-                                            <option key={table.id} value={table.id}>
-                                                Bàn {table.number} (sức chứa {table.capacity} người)
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1.5">Ghi chú (tùy chọn)</label>
                                     <textarea
                                         rows={3}
                                         value={form.note || ""}
                                         onChange={t => setForm({ ...form, note: t.target.value })}
                                         className="w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition resize-none"
-                                        placeholder="Ví dụ: cần ghế trẻ em, gần cửa sổ..."
+                                        placeholder="Ví dụ: cần ghế trẻ em, vị trí yên tĩnh..."
                                     />
                                 </div>
 

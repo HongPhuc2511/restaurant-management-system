@@ -41,7 +41,7 @@ def seed_customers():
             user.save()
         customers.append(user)
 
-    print(f"✅ Đã chuẩn bị {len(customers)} tài khoản khách hàng.")
+    print(f" Đã chuẩn bị {len(customers)} tài khoản khách hàng.")
     return customers
 
 
@@ -260,9 +260,9 @@ def seed_foods():
             created_count += 1
             all_foods.append(new_food)
 
-    print(f"✅ Đã cập nhật mô tả dài cho {updated_count} món ăn sẵn có.")
+    print(f" Đã cập nhật mô tả dài cho {updated_count} món ăn sẵn có.")
     if created_count > 0:
-        print(f"✅ Đã tạo mới {created_count} món ăn.")
+        print(f" Đã tạo mới {created_count} món ăn.")
 
     return all_foods
 
@@ -298,7 +298,7 @@ def seed_reviews(foods, customers):
             if created:
                 reviews_count += 1
 
-    print(f"✅ Đã tạo thành công {reviews_count} đánh giá/bình luận cho các món ăn.")
+    print(f" Đã tạo thành công {reviews_count} đánh giá/bình luận cho các món ăn.")
 
 
 def seed_suppliers():
@@ -326,7 +326,7 @@ def seed_suppliers():
             )
         suppliers.append(sup)
 
-    print(f"✅ Sẵn sàng {len(suppliers)} Nhà cung cấp.")
+    print(f" Sẵn sàng {len(suppliers)} Nhà cung cấp.")
     return suppliers
 
 
@@ -343,7 +343,7 @@ def seed_tables():
                 "active": True
             }
         )
-    print(f"✅ Khởi tạo danh sách {len(table_numbers)} Bàn ăn.")
+    print(f" Khởi tạo danh sách {len(table_numbers)} Bàn ăn.")
 
 
 def seed_employees():
@@ -369,7 +369,7 @@ def seed_employees():
             emp.save()
         employees.append(emp)
 
-    print(f"✅ Sẵn sàng {len(employees)} Tài khoản nhân viên.")
+    print(f" Sẵn sàng {len(employees)} Tài khoản nhân viên.")
     return employees
 
 
@@ -412,12 +412,12 @@ def seed_import_receipts(suppliers, employees):
             random_date = now - timedelta(days=random.randint(1, 90))
             ImportReceipt.objects.filter(id=i).update(created_date=random_date)
 
-    print("✅ Khởi tạo danh sách Phiếu nhập kho (ImportReceipt) thành công.")
+    print(" Khởi tạo danh sách Phiếu nhập kho (ImportReceipt) thành công.")
 
 
 def run_seed():
     print("==================================================")
-    print("🚀 BẮT ĐẦU CHẠY SEED DỮ LIỆU TỔNG HỢP HỆ THỐNG")
+    print(" BẮT ĐẦU CHẠY SEED DỮ LIỆU TỔNG HỢP HỆ THỐNG")
     print("==================================================")
 
     customers = seed_customers()
@@ -429,7 +429,7 @@ def run_seed():
     seed_import_receipts(suppliers, employees)
 
     print("\n==================================================")
-    print("🎉 TẤT CẢ DỮ LIỆU MẪU ĐÃ ĐƯỢC CẬP NHẬT THÀNH CÔNG!")
+    print(" TẤT CẢ DỮ LIỆU MẪU ĐÃ ĐƯỢC CẬP NHẬT THÀNH CÔNG!")
     print("==================================================")
 
 

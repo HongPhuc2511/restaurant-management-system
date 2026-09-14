@@ -157,7 +157,7 @@ class Order(BaseModel):
     note=models.TextField(blank=True)
     address = models.CharField(max_length=255, blank=True)
     customer=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='orders_customer')
-    table=models.ForeignKey(RestaurantTable,on_delete=models.SET_NULL,null=True,related_name='orders')
+    table=models.ForeignKey(RestaurantTable,on_delete=models.SET_NULL,null=True,related_name='orders',blank=True)
     employee=models.ForeignKey(User,on_delete=models.SET_NULL,null=True,related_name='orders_employee')
     reservation = models.ForeignKey(Reservation, on_delete=models.SET_NULL, null=True, blank=True,related_name='orders')
 
