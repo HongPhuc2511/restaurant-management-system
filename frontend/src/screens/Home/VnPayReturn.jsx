@@ -1,15 +1,17 @@
-import { useEffect, useState,useRef } from "react";
+import { useEffect, useState,useRef,useContext } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import apis, { endpoints } from "../../configs/Apis";
+import { MyCartContext } from "../../configs/Contexts";
 
 const VNPayReturn = () => {
     const [searchParams] = useSearchParams();
     const [status, setStatus] = useState("processing");
-    const called = useRef(false); // THÊM: chặn gọi API lần 2
+    const [, cartDispatch] = useContext(MyCartContext);
+    const called = useRef(false); 
 
     useEffect(() => {
-        if (called.current) return; // THÊM: nếu đã gọi rồi thì dừng luôn
-        called.current = true;       // THÊM: đánh dấu đã gọi
+        if (called.current) return; 
+        called.current = true;       
 
         const verifyPayment = async () => {
             const responseCode = searchParams.get("vnp_ResponseCode");
@@ -29,6 +31,7 @@ const VNPayReturn = () => {
                         vnp_Amount: amount
                     });
                     setStatus("success");
+                    cartDispatch({ type: "CLEAR_CART" });
                 } catch (error) {
                     console.error("Lỗi cập nhật payment:", error);
                     setStatus("failed");
@@ -39,7 +42,7 @@ const VNPayReturn = () => {
         };
 
         verifyPayment();
-    }, []); // SỬA: đổi từ [searchParams] thành [] - chỉ chạy đúng 1 lần khi mount
+    }, []); 
 
     return (
         <div className="max-w-md mx-auto my-20 p-6 bg-white rounded-lg shadow-md text-center">

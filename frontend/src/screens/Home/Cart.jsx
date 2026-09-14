@@ -48,7 +48,6 @@ const Cart = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       
-      // Đã thêm address vào payload
       const orderData = {
         address: address,
         items: cart.map((item) => ({ food: item.food.id, quantity: item.quantity })),
@@ -93,7 +92,7 @@ const Cart = () => {
           order_id: billId,
           amount: finalAmount,
         });
-        cartDispatch({ type: "CLEAR_CART" });
+        
         if (resPay.data && resPay.data.payment_url) {
           window.location.href = resPay.data.payment_url;
         } else {

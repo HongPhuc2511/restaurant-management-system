@@ -19,7 +19,7 @@ export const endpoints={
 
 export const authApis=(token)=>{
     return axios.create({
-        baseURL:"https://hongphuc.pythonanywhere.com/",
+        baseURL:"http://127.0.0.1:8000/",
         headers:{
             'Authorization':`Bearer ${token}`
         }   
@@ -27,5 +27,5 @@ export const authApis=(token)=>{
 }
 
 export default axios.create({
-    baseURL:"https://hongphuc.pythonanywhere.com/"
+    baseURL:"http://127.0.0.1:8000/"
 })

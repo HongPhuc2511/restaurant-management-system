@@ -12,7 +12,50 @@ from django.utils.safestring import mark_safe
 
 from core.models import *
 
-class UserAdmin(admin.ModelAdmin):
+class StaffAllowedMixin:
+    """Dùng cho các Admin mà NHÂN VIÊN cũng được phép xem/thao tác."""
+
+    def _check_role(self, request):
+        return request.user.is_authenticated and request.user.role in [enums.Role.ADMIN, enums.Role.STAFF]
+
+    def has_module_permission(self, request):
+        return self._check_role(request)
+
+    def has_view_permission(self, request, obj=None):
+        return self._check_role(request)
+
+    def has_add_permission(self, request):
+        return self._check_role(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self._check_role(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return self._check_role(request)
+
+
+class AdminOnlyMixin:
+    """Dùng cho các Admin CHỈ quản trị viên (ADMIN) mới được xem - nhân viên bị ẩn hoàn toàn."""
+
+    def _check_role(self, request):
+        return request.user.is_authenticated and request.user.role == enums.Role.ADMIN
+
+    def has_module_permission(self, request):
+        return self._check_role(request)
+
+    def has_view_permission(self, request, obj=None):
+        return self._check_role(request)
+
+    def has_add_permission(self, request):
+        return self._check_role(request)
+
+    def has_change_permission(self, request, obj=None):
+        return self._check_role(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return self._check_role(request)
+
+class UserAdmin(AdminOnlyMixin,admin.ModelAdmin):
     list_display = ('id', 'username', 'email', 'role', 'phone', 'is_active')
     list_filter = ('role', 'is_active')
     search_fields = ('username', 'email', 'phone')
@@ -23,11 +66,11 @@ class FoodForm(forms.ModelForm):
         model = Food
         fields='__all__'
 
-class FoodIngredientInline(admin.TabularInline):
+class FoodIngredientInline(AdminOnlyMixin,admin.TabularInline):
     model = FoodIngredient
     extra = 1
 
-class IngredientAdmin(admin.ModelAdmin):
+class IngredientAdmin(AdminOnlyMixin,admin.ModelAdmin):
     list_display = ('id', 'name', 'unit', 'stock_status', 'price', 'active')
     search_fields = ('name',)
     list_filter = ('active', 'unit')
@@ -41,7 +84,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
     stock_status.short_description = "Tồn kho"
 
-class FoodAdmin(admin.ModelAdmin):
+class FoodAdmin(AdminOnlyMixin,admin.ModelAdmin):
     list_display = ('id', 'name', 'price','category','active')
     search_fields = ('name','price','category')
     list_filter = ('category','active')
@@ -52,19 +95,19 @@ class FoodAdmin(admin.ModelAdmin):
     def avatar(self, food):
             return mark_safe(f'<img src="{food.image.url}" width="150" />')
 
-class CategoryAdmin(admin.ModelAdmin):
+class CategoryAdmin(AdminOnlyMixin,admin.ModelAdmin):
     list_display = ('id', 'name','active')
     search_fields = ('name',)
     list_filter = ('active',)
 
 
-class OrderItemInline(admin.TabularInline):
+class OrderItemInline(StaffAllowedMixin,admin.TabularInline):
     model = OrderItem
     extra = 0
     fields = ('food', 'quantity', 'unit_price', 'subtotal')
     readonly_fields = ('subtotal',)
 
-class OrderAdmin(admin.ModelAdmin):
+class OrderAdmin(StaffAllowedMixin,admin.ModelAdmin):
     list_display = ('id', 'customer', 'table', 'status', 'get_total_amount', 'order_time')
     list_filter = ('status', 'order_time')
     search_fields = ('id', 'customer__username', 'address')
@@ -77,13 +120,13 @@ class OrderAdmin(admin.ModelAdmin):
         return f"{total:,.0f} VNĐ"
     get_total_amount.short_description = "Tổng tiền"
 
-class ImportReceiptDetailInline(admin.TabularInline):
+class ImportReceiptDetailInline(AdminOnlyMixin,admin.TabularInline):
     model = ImportReceiptDetail
     extra = 0
     readonly_fields = ['sub_total']
 
 
-class ImportReceiptAdmin(admin.ModelAdmin):
+class ImportReceiptAdmin(AdminOnlyMixin,admin.ModelAdmin):
     list_display = ('id', 'supplier', 'employee', 'total_amount', 'active', 'created_date')
     list_filter = ('active', 'supplier')
     search_fields = ('supplier__name',)
@@ -107,21 +150,21 @@ class ImportReceiptAdmin(admin.ModelAdmin):
             obj.employee = request.user
         super().save_model(request, obj, form, change)
 
-class ReservationInline(admin.TabularInline):
+class ReservationInline(StaffAllowedMixin,admin.TabularInline):
     model = Reservation
     extra = 0
     can_delete = False
     fields = ('customer', 'guest_name', 'guest_phone', 'reservation_time', 'number_of_people', 'status')
     readonly_fields = ('reservation_time',)
 
-class RestaurantTableAdmin(admin.ModelAdmin):
+class RestaurantTableAdmin(StaffAllowedMixin,admin.ModelAdmin):
     list_display = ('number', 'capacity', 'status')
     list_filter = ('status',)
     search_fields = ('number',)
     list_editable = ('status',)
     inlines = [ReservationInline]
 
-class ReservationAdmin(admin.ModelAdmin):
+class ReservationAdmin(StaffAllowedMixin,admin.ModelAdmin):
     list_display = ('id','get_customer_info','guest_phone','table',
         'reservation_time', 'number_of_people','status')
     list_filter = ('status', 'reservation_time')
@@ -140,7 +183,7 @@ class PaymentInline(admin.TabularInline):
     readonly_fields = ('paid_at',)
     can_delete = False
 
-class PaymentAdmin(admin.ModelAdmin):
+class PaymentAdmin(StaffAllowedMixin,admin.ModelAdmin):
     list_display = ('id', 'bill_link', 'amount_formatted', 'payment_method_badge', 'payment_status_badge', 'paid_at')
     list_filter = ('payment_method', 'payment_status', 'paid_at')
     search_fields = ('bill__id', 'bill__order__id')
@@ -169,7 +212,7 @@ class PaymentAdmin(admin.ModelAdmin):
         return format_html(f'<span style="background-color: {color}; color: {text_color}; padding: 4px 8px; border-radius: 4px; font-weight: bold;">{obj.get_payment_status_display()}</span>')
     payment_status_badge.short_description = "Trạng Thái"
 
-class BillAdmin(admin.ModelAdmin):
+class BillAdmin(StaffAllowedMixin,admin.ModelAdmin):
     list_display = ('id', 'order_link', 'total_amount_formatted', 'final_amount_formatted', 'discount', 'created_date')
     list_filter = ('created_date',)
     search_fields = ('id', 'order__id')
@@ -187,12 +230,12 @@ class BillAdmin(admin.ModelAdmin):
         return f"{obj.final_amount:,.0f} VNĐ"
     final_amount_formatted.short_description = "Thực Thu"
 
-class SupplierAdmin(admin.ModelAdmin):
+class SupplierAdmin(AdminOnlyMixin,admin.ModelAdmin):
     list_display = ('id', 'name', 'phone', 'address', 'active')
     search_fields = ('name', 'phone')
     list_filter = ('active',)
 
-class VoucherAdmin(admin.ModelAdmin):
+class VoucherAdmin(AdminOnlyMixin,admin.ModelAdmin):
     list_display = ['id', 'code', 'discount', 'start_date', 'end_date', 'active']
     search_fields = ['code']
 
@@ -293,7 +336,7 @@ class RestaurantAdminSite(admin.AdminSite):
             'end_date': end_date_str,
         })
 
-class FoodReviewAdmin(admin.ModelAdmin):
+class FoodReviewAdmin(AdminOnlyMixin,admin.ModelAdmin):
     list_display = ('id', 'food', 'customer', 'rating_stars', 'short_comment', 'active', 'created_date')
     list_filter = ('rating', 'active', 'created_date')
     search_fields = ('food__name', 'customer__username', 'comment')

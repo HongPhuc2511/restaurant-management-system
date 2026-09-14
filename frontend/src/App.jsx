@@ -20,10 +20,23 @@ import PromotionDetail from "./screens/Home/PromotionDetail";
 import { authApis, endpoints } from "./configs/Apis";
 import MyOrder from "./screens/Home/MyOrder";
 
+const getInitialCart = () => {
+    try {
+        const saved = localStorage.getItem('cart');
+        return saved ? JSON.parse(saved) : [];
+    } catch {
+        return [];
+    }
+}
+
 function App() {
   const [user, dispatch] = useReducer(MyUserReducer, null);
   const [cart, cartDispatch] = useReducer(MyCartReducer, []);
   const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
 
   useEffect(() => {   
     const restoreUser = async () => {

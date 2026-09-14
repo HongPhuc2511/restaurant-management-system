@@ -21,6 +21,13 @@ class User(AbstractUser):
     class Meta:
         db_table='users'
 
+    def save(self, *args, **kwargs):
+        if self.role in [enums.Role.ADMIN, enums.Role.STAFF]:
+            self.is_staff = True
+        else:
+            self.is_staff = False
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.username
 

@@ -107,7 +107,6 @@ function Header() {
             </>
           ) : (
             <>  
-              {/* Nút Xem Đơn Hàng Của Tôi */}
               <Link
                 to="/orders"
                 className={`text-sm font-bold hover:text-orange-400 transition ${
@@ -117,7 +116,6 @@ function Header() {
                 Đơn hàng của tôi
               </Link>
 
-              {/* Nút Xem Lịch Sử Đặt Bàn */}
               <Link
                 to="/my-reservation"
                 className={`text-sm font-bold hover:text-orange-400 transition ${
