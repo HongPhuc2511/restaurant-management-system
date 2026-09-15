@@ -45,7 +45,7 @@ const Home = () => {
                     to={`/menu?categoryId=${c.id}`}
                     key={c.id}
                     className="flex flex-col group cursor-pointer">
-                    <div className="overflow-hidden rounded-[2rem] aspect-[3/4] mb-5 shadow-lg bg-gray-100">
+                    <div className="overflow-hidden rounded-4xl aspect-3/4 mb-5 shadow-lg bg-gray-100">
                         <img
                             src={categoryImages[c.name] || "https://via.placeholder.com/300x400?text=No+Image"}   
                             alt={c.name}

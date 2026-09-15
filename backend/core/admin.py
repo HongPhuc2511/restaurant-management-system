@@ -13,7 +13,6 @@ from django.utils.safestring import mark_safe
 from core.models import *
 
 class StaffAllowedMixin:
-    """Dùng cho các Admin mà NHÂN VIÊN cũng được phép xem/thao tác."""
 
     def _check_role(self, request):
         return request.user.is_authenticated and request.user.role in [enums.Role.ADMIN, enums.Role.STAFF]
@@ -35,7 +34,6 @@ class StaffAllowedMixin:
 
 
 class AdminOnlyMixin:
-    """Dùng cho các Admin CHỈ quản trị viên (ADMIN) mới được xem - nhân viên bị ẩn hoàn toàn."""
 
     def _check_role(self, request):
         return request.user.is_authenticated and request.user.role == enums.Role.ADMIN

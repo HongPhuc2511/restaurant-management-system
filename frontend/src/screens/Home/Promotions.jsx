@@ -51,14 +51,12 @@ const Promotions = () => {
                                 to={`/promotions/${v.id}`}
                                 className="bg-white rounded-2xl shadow-sm overflow-hidden flex hover:shadow-md transition"
                             >
-                                {/* Ảnh - bên trái */}
                                 <img
                                     src={v.image}
                                     alt={v.code}
                                     className="w-60 h-60 object-cover shrink-0"
                                 />
 
-                                {/* Thông tin - bên phải */}
                                 <div className="p-5 flex flex-col justify-center">
                                     <p className="font-bold text-gray-800 text-lg">
                                         Giảm {Number(v.discount).toLocaleString("vi-VN")}đ

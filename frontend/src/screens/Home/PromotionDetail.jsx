@@ -84,7 +84,6 @@ const PromotionDetail = () => {
                 </Link>
 
                 <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                    {/* Banner hình ảnh */}
                     {voucher.image && (
                         <div className="relative w-full h-64 sm:h-80 overflow-hidden bg-gray-100">
                             <img src={voucher.image} alt={voucher.code} className="w-full h-full object-cover" />
@@ -99,7 +98,6 @@ const PromotionDetail = () => {
                     )}
 
                     <div className="p-6 sm:p-8">
-                        {/* Tiêu đề giá trị voucher */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-4">
                             <div>
                                 <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
@@ -115,7 +113,6 @@ const PromotionDetail = () => {
                             </div>
                         </div>
 
-                        {/* Nội dung chi tiết */}
                         <div className="mt-6">
                             <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider mb-2">Chi tiết ưu đãi</h3>
                             <p className="text-gray-600 leading-relaxed text-sm sm:text-base whitespace-pre-line bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
@@ -123,7 +120,6 @@ const PromotionDetail = () => {
                             </p>
                         </div>
 
-                        {/* Thẻ Voucher Ticket Copy */}
                         <div className="mt-8 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-dashed border-red-200 rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 relative overflow-hidden">
                             <div className="w-full sm:w-auto text-center sm:text-left">
                                 <span className="text-xs font-bold text-red-500 uppercase tracking-wider block mb-1">Mã giảm giá của bạn</span>
